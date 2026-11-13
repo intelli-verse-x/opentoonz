@@ -76,9 +76,9 @@ class DVAPI ParamsPage final : public QFrame {
   ParamViewer *m_paramViewer;
 
   struct PageParam {
-    ParamField* m_field;
+    ParamField *m_field;
     std::string m_paramName;
-    QCheckBox* m_pinCheckBox;
+    QCheckBox *m_pinCheckBox;
   };
   struct ExposedParamTarget {
     int m_fxIndex;
@@ -86,7 +86,7 @@ class DVAPI ParamsPage final : public QFrame {
   };
 
   std::vector<PageParam> m_pageParams;
-  QMap<ParamField*, ExposedParamTarget> m_exposedParamTargets;
+  QMap<ParamField *, ExposedParamTarget> m_exposedParamTargets;
   TFxP m_actualMacroFx;
   std::vector<int> m_macroFxPath;
   int m_macroFxIndex;
@@ -103,13 +103,13 @@ public:
   }
 
   void setFx(const TFxP &currentFx, const TFxP &actualFx, int frame);
-  void setMacroFx(const TFxP& currentFx, const TFxP& actualFx, int frame);
-  void configureMacroPage(TMacroFx* macroFx,
-                          const std::vector<int>& macroFxPath, int fxIndex);
+  void setMacroFx(const TFxP &currentFx, const TFxP &actualFx, int frame);
+  void configureMacroPage(TMacroFx *macroFx,
+                          const std::vector<int> &macroFxPath, int fxIndex);
   void setPinnedPage(bool pinnedPage) { m_isPinnedPage = pinnedPage; }
-  void addExposedParam(int fxIndex, const TFxP& fx,
-                       const std::string& paramName);
-  void addNodeSeparator(const QString& name);
+  void addExposedParam(int fxIndex, const TFxP &fx,
+                       const std::string &paramName);
+  void addNodeSeparator(const QString &name);
 
   void update(int frame);
   void setPointValue(int index, const TPointD &p);
@@ -127,8 +127,8 @@ public:
 protected:
   void setPageField(TIStream &is, const TFxP &fx, bool isVertical = true);
   void addGlobalControl(const TFxP &fx);
-  void registerPageParam(ParamField* field, const std::string& paramName);
-  QCheckBox* createPinCheckBox(ParamField* field, const std::string& paramName);
+  void registerPageParam(ParamField *field, const std::string &paramName);
+  QCheckBox *createPinCheckBox(ParamField *field, const std::string &paramName);
   int labelColumn() const;
   int fieldColumn() const;
   int pageColumnCount() const;
@@ -189,7 +189,7 @@ class DVAPI ParamsPageSet final : public QWidget {
   // float / linear render settings
   QLabel *m_warningMark;
 
-  TMacroFx* m_buildingMacroFx;
+  TMacroFx *m_buildingMacroFx;
   std::vector<int> m_buildingMacroFxPath;
   int m_buildingMacroFxIndex;
 
@@ -203,9 +203,9 @@ public:
 
   void updatePage(int frame, bool onlyParam);
   /*! Create a page reading xml file relating to \b fx. */
-  void createControls(const TFxP& fx, int index = -1,
-                      TMacroFx* owningMacro               = nullptr,
-                      const std::vector<int>& macroFxPath = {});
+  void createControls(const TFxP &fx, int index = -1,
+                      TMacroFx *owningMacro               = nullptr,
+                      const std::vector<int> &macroFxPath = {});
 
   ParamsPage *getCurrentParamsPage() const;
   ParamsPage *getParamsPage(int index) const;
@@ -221,8 +221,8 @@ public:
   void updateWarnings(const TFxP &currentFx, bool isFloat);
 
 protected:
-  void createPage(TIStream& is, const TFxP& fx, int index, TMacroFx* macroFx,
-                  const std::vector<int>& macroFxPath, bool isFirstPageOfFx);
+  void createPage(TIStream &is, const TFxP &fx, int index, TMacroFx *macroFx,
+                  const std::vector<int> &macroFxPath, bool isFirstPageOfFx);
 
 protected slots:
   void setPage(int);

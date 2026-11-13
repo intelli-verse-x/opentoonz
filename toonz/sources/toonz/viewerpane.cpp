@@ -761,7 +761,6 @@ void BaseViewerPanel::onSceneSwitched() {
                                   ->getFrameRate());
   m_sceneViewer->setEditPreviewSubcamera(false);
   onSceneChanged();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -969,9 +968,8 @@ void BaseViewerPanel::load(QSettings &settings) {
 
   if (settings.childGroups().contains(QStringLiteral("camera3D"))) {
     settings.beginGroup(QStringLiteral("camera3D"));
-    pending.pan3D =
-        TPointD(settings.value("panX", 0.0).toDouble(),
-                settings.value("panY", 0.0).toDouble());
+    pending.pan3D       = TPointD(settings.value("panX", 0.0).toDouble(),
+                                  settings.value("panY", 0.0).toDouble());
     pending.zoomScale3D = settings.value("zoom", 1.0).toDouble();
     pending.phi3D       = settings.value("phi", 30.0).toDouble();
     pending.theta3D     = settings.value("theta", 20.0).toDouble();

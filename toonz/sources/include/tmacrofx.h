@@ -74,9 +74,9 @@ public:
   // macroFx
   const std::vector<TFxP> &getFxs() const;
 
-  const std::vector<ExposedParam>& getExposedParams() const;
-  bool isParamExposed(const TFx* fx, const std::string& paramName) const;
-  void setParamExposed(const TFx* fx, const std::string& paramName,
+  const std::vector<ExposedParam> &getExposedParams() const;
+  bool isParamExposed(const TFx *fx, const std::string &paramName) const;
+  void setParamExposed(const TFx *fx, const std::string &paramName,
                        bool exposed);
   std::string getExposedParamKey() const;
 
