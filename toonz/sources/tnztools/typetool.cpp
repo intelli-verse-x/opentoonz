@@ -1,5 +1,3 @@
-
-
 //#include "tw/mainshell.h"
 
 #include "tools/tool.h"
@@ -1495,6 +1493,14 @@ bool TypeTool::onPropertyChanged(std::string propertyName) {
       showTextHistoryPopup();
     else
       hideTextHistoryPopup();
+    // Markdown preview bypasses per-character placement. Switching back to
+    // ordinary text must rebuild positions before drawing or committing it.
+    m_formattedCacheValid = false;
+    if (m_active && m_validFonts) {
+      updateCharPositions();
+      updateCursorPoint();
+      invalidate();
+    }
     return true;
   }
 

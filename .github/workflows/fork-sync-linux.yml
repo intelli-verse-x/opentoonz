@@ -58,6 +58,7 @@ jobs:
         python3 .github/tests/test_gif_export_policy.py
         python3 .github/tests/test_dock_tab_geometry.py
         python3 .github/tests/test_dock_tab_lock.py
+        python3 .github/tests/test_type_history_transition.py --source toonz/sources/tnztools/typetool.cpp
 
     - name: Set up cache
       run: mkdir -p /home/runner/.ccache
