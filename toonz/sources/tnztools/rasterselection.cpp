@@ -36,6 +36,8 @@
 #include <QFile>
 #include <QTemporaryDir>
 
+#include <cmath>
+
 #include "timage_io.h"
 #include "tropcm.h"
 #include "tstream.h"
@@ -139,6 +141,11 @@ std::unique_ptr<RasterImageData> decodeDrawing(const QMimeData *mime) {
   stream >> version >> cm >> dpiX >> dpiY >> x0 >> y0 >> x1 >> y1 >> a11 >>
       a12 >> a13 >> a21 >> a22 >> a23 >> paletteData;
   if (stream.status() != QDataStream::Ok || version != 1) return nullptr;
+  // External clipboard metadata must not introduce non-finite geometry or
+  // DPI into paste transforms. Zero DPI remains the supported unknown value.
+  for (double value :
+       {dpiX, dpiY, x0, y0, x1, y1, a11, a12, a13, a21, a22, a23})
+    if (!std::isfinite(value)) return nullptr;
   TPaletteP palette =
       cm ? paletteFromBytes(paletteData) : TPaletteP(new TPalette);
   if (!palette) return nullptr;

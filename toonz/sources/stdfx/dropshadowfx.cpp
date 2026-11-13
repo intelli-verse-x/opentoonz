@@ -63,7 +63,15 @@ public:
   }
 
   bool canHandle(const TRenderSettings &info, double frame) override {
-    return true;
+    // The kernel and shadow angle are defined in the FX's local axes.
+    return false;
+  }
+
+  TAffine handledAffine(const TRenderSettings &info, double frame) override {
+    // Keep the renderer's uniform sampling resolution, but let its affine
+    // transformer apply rotations, reflections and non-uniform scaling.
+    const TAffine handled = TRasterFx::handledAffine(info, frame);
+    return TScale(std::abs(handled.a11));
   }
 
   ShadowGeometry geometry(double frame, const TRenderSettings &info) {
