@@ -61,6 +61,8 @@ jobs:
         python3 .github/tests/test_type_history_transition.py --source toonz/sources/tnztools/typetool.cpp
         python3 .github/tests/test_drawing_clipboard_numeric.py
         python3 .github/tests/test_drop_shadow_affine.py
+        python3 .github/tests/test_drop_shadow_numeric.py
+        python3 .github/tests/test_translation_catalogs.py
 
     - name: Set up cache
       run: mkdir -p /home/runner/.ccache

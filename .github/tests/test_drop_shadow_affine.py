@@ -61,7 +61,7 @@ int main(){
 def main():
     renderer=(REFERENCE/'toonz/sources/tnzbase/trasterfx.cpp').read_text()
     fx_source=(ROOT/'toonz/sources/stdfx/dropshadowfx.cpp').read_text()
-    helpers=(REFERENCE/'toonz/sources/stdfx/shadowbevelutils.h').read_text()
+    helpers=(ROOT/'toonz/sources/stdfx/shadowbevelutils.h').read_text()
     geometry=function(helpers,'struct ShadowGeometry')+';'
     predicate=re.search(r'bool canHandleAffine\s*=\s*(canHandle\(info, frame\).*?);',renderer,re.S).group(1)
     policy=function(fx_source,'bool canHandle(').replace(' override','')
@@ -72,6 +72,8 @@ def main():
     affine_source=(REFERENCE/'toonz/sources/common/tgeometry/tgeometry.cpp').read_text()
     operations='\n'.join(function(affine_source,sig) for sig in ['TAffine TAffine::operator*(const TAffine &b) const','TAffine TAffine::inv() const','double TAffine::det() const','bool TAffine::operator==(const TAffine &a) const','TPointD TAffine::transformDirection(const TPointD &p) const'])
     code='''#include "tgeometry.h"
+#include "texception.h"
+#include <limits>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -79,7 +81,7 @@ def main():
 #include <vector>
 struct TRenderSettings { TAffine m_affine; };
 class TRasterFx { public: virtual TAffine handledAffine(const TRenderSettings &,double); };
-'''+operations+'\n'+norm+'\n'+base+'\n'+function(helpers,'inline int blurReach(')+'\n'+geometry+'''
+'''+operations+'\n'+norm+'\n'+base+'\n'+'\n'.join(function(helpers, signature) for signature in ['inline void requireFinite(', 'inline int roundedOffset(', 'inline int blurReach(', 'inline int inputPadding('])+'\n'+geometry+'''
 class DropShadowFx:public TRasterFx { public:
 '''+policy+'\n'+handled+'''
  bool route(const TRenderSettings &info,double frame){return '''+predicate+''';}

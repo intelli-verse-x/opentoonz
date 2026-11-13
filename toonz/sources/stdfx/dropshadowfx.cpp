@@ -98,7 +98,7 @@ public:
   }
 
   TRectD inputRect(const TRectD &rect, const ShadowGeometry &g) {
-    return rect.enlarge(g.reachX + std::abs(g.dx), g.reachY + std::abs(g.dy));
+    return rect.enlarge(g.padX, g.padY);
   }
 
   void doDryCompute(TRectD &rect, double frame,
@@ -122,13 +122,14 @@ void DropShadowFx::doCompute(TTile &tile, double frame,
                              const TRenderSettings &info) {
   if (!m_input.isConnected()) return;
   const ShadowGeometry g = geometry(frame, info);
-  const int padX = g.reachX + std::abs(g.dx), padY = g.reachY + std::abs(g.dy);
+  const int padX = g.padX, padY = g.padY;
   const TRasterP out = tile.getRaster();
   const int lx = out->getLx(), ly = out->getLy();
+  const TDimension inputSize =
+      shadowbevel::checkedRasterSize(lx, ly, padX, padY);
   TTile source;
   m_input->allocateAndCompute(source, tile.m_pos - TPointD(padX, padY),
-                              TDimension(lx + 2 * padX, ly + 2 * padY), out,
-                              frame, info);
+                              inputSize, out, frame, info);
   FloatImage image;
   if (TRaster32P ras = source.getRaster())
     readRaster(ras, image);
