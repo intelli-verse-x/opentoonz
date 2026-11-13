@@ -1794,7 +1794,9 @@ int Region::calculateMinimumSize(bool direction, bool recalcChildren) {
       if (maxMinSizes < (direction == horizontal ? w : h))
         maxMinSizes = (direction == horizontal ? w : h);
     }
-    sumMinSizes = maxMinSizes + tabBarExtra;
+    // Tab groups are leaves: both return paths must include the strip,
+    // regardless of the region's split orientation.
+    sumMinSizes = maxMinSizes = maxMinSizes + tabBarExtra;
   } else if (m_item) {
     sumMinSizes = maxMinSizes = (direction == horizontal)
                                     ? m_item->minimumSize().width()
@@ -1846,7 +1848,7 @@ int Region::calculateMaximumSize(bool direction, bool recalcChildren) {
       if (minMaxSizes > (direction == horizontal ? w : h))
         minMaxSizes = (direction == horizontal ? w : h);
     }
-    sumMaxSizes = minMaxSizes + tabBarExtra;
+    sumMaxSizes = minMaxSizes = minMaxSizes + tabBarExtra;
   } else if (m_item) {
     sumMaxSizes = minMaxSizes = (direction == horizontal)
                                     ? m_item->maximumSize().width()
