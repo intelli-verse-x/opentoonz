@@ -8,13 +8,14 @@ on:
   push:
     branches:
       - master  # Specify branches where the workflow should run
+      - 'org-sync/upstream-*'
     paths:
       - '**/*'                                    # Include all files in the repository
       - '!appveyor.yml'                           # Ignore changes in AppVeyor
       - '!README.md'                              # Exclude README
       - '!doc/**'                                 # Exclude documentation
       - '!**/.github/**'                          # Exclude everything in .github folder
-      - '.github/workflows/workflow_windows.yml'  # Include Windows workflow file
+      - '.github/workflows/fork-sync-windows.yml'  # Include Windows workflow file
   pull_request:
     paths:
       - '**/*'
@@ -22,11 +23,15 @@ on:
       - '!README.md'
       - '!doc/**'
       - '!**/.github/**'
-      - '.github/workflows/workflow_windows.yml'
+      - '.github/workflows/fork-sync-windows.yml'
+
+permissions:
+  contents: read
 
 jobs:
   Windows:
     runs-on: windows-2025
+    timeout-minutes: 90
     env:
       # QT related variable
       QT_PATH: ${{ github.workspace }}\thirdparty\qt\5.15.2_wintab\msvc2019_64  # Path to custom Qt
@@ -44,8 +49,9 @@ jobs:
       OpenCV_DIR: C:\tools\opencv\build     # Path to OpenCV
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
+          persist-credentials: false
           lfs: false
 
       # Cache OpenCV and Boost libraries
@@ -88,7 +94,7 @@ jobs:
 
       # Add msbuild to PATH for build process
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
 
       # CMake configuration step
       - name: CMake configuration

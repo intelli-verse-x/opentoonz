@@ -12,7 +12,7 @@ on:
       - '!README.md'             # Exclude README
       - '!doc/**'                # Exclude documentation
       - '!**/.github/**'         # Exclude everything in .github folder
-      - '.github/workflows/workflow_linux.yml'  # Include Linux workflow file
+      - '.github/workflows/fork-sync-linux.yml'  # Include Linux workflow file
   pull_request:
     paths:
       - '**/*'
@@ -20,7 +20,10 @@ on:
       - '!README.md'
       - '!doc/**'
       - '!**/.github/**'
-      - '.github/workflows/workflow_linux.yml'
+      - '.github/workflows/fork-sync-linux.yml'
+
+permissions:
+  contents: read
 
 jobs:
   Ubuntu:
@@ -29,6 +32,7 @@ jobs:
     # GLIBC_2.38 / GLIBCXX_3.4.32 and will not start on 22.04 (see #7001).
     # Modern-toolchain coverage comes from the Fedora job below.
     runs-on: ubuntu-22.04
+    timeout-minutes: 90
     strategy:
       matrix:
         compiler: [gcc, clang]
@@ -40,12 +44,25 @@ jobs:
             cc: clang
             cxx: clang++
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      with:
+        persist-credentials: false
 
     - name: Install libraries
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake pkg-config ninja-build ccache libboost-all-dev qtbase5-dev qt5-qmake qtscript5-dev qttools5-dev qttools5-dev-tools qtmultimedia5-dev qtwayland5 libqt5svg5-dev libqt5opengl5-dev libqt5multimedia5-plugins libqt5serialport5-dev libsuperlu-dev liblz4-dev libusb-1.0-0-dev liblzo2-dev libpng-dev libjpeg-dev libglew-dev freeglut3-dev libfreetype6-dev libjson-c-dev libmypaint-dev libopencv-dev libturbojpeg-dev libomp-dev libfuse2
+
+    - name: Test export and dock compatibility policies
+      run: |
+        python3 .github/tests/test_gif_export_policy.py
+        python3 .github/tests/test_dock_tab_geometry.py
+        python3 .github/tests/test_dock_tab_lock.py
+        python3 .github/tests/test_type_history_transition.py --source toonz/sources/tnztools/typetool.cpp
+        python3 .github/tests/test_drawing_clipboard_numeric.py
+        python3 .github/tests/test_drop_shadow_affine.py
+        python3 .github/tests/test_drop_shadow_numeric.py
+        python3 .github/tests/test_translation_catalogs.py
 
     - name: Set up cache
       run: mkdir -p /home/runner/.ccache
@@ -86,8 +103,11 @@ jobs:
         cp appdir/usr/share/icons/hicolor/*/apps/*.png appdir
 
         mkdir artifact
-        mv appdir/usr/share/opentoonz/stuff artifact/portablestuff
-        rmdir appdir/usr/share/opentoonz
+        # Copy rather than move: the AppImage keeps its own
+        # usr/share/opentoonz/stuff so it can seed a config when run on its
+        # own, while the tarball still ships portablestuff next to it for
+        # portable-mode testing.
+        cp -r appdir/usr/share/opentoonz/stuff artifact/portablestuff
 
         wget -q -c 'https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage'
         wget -q -c 'https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage'
@@ -120,6 +140,39 @@ jobs:
         mv artifact ${ARTIFACT_NAME}
         tar zcf ${ARTIFACT_NAME}.tar.gz ${ARTIFACT_NAME}
 
+    - name: Smoke test the installed tree
+      # Nothing else in CI runs a built binary. tconverter seeds before it
+      # parses arguments, so a bare invocation does the work and exits 1.
+      run: |
+        set -eu
+        export QT_QPA_PLATFORM=offscreen
+        CONF=.config/OpenToonz
+
+        # $ORIGIN RPATH resolves the bundled libraries without LD_LIBRARY_PATH
+        ! ldd /opt/opentoonz/bin/tconverter | grep 'not found'
+
+        # first run seeds the default root
+        export HOME="$(mktemp -d)"
+        timeout 120 /opt/opentoonz/bin/tconverter || true
+        test -d "$HOME/$CONF/stuff/profiles"
+        grep -q "^TOONZROOT=$HOME/$CONF/stuff$" "$HOME/$CONF/SystemVar.ini"
+
+        # a root configured elsewhere is left alone, present or not
+        export HOME="$(mktemp -d)"
+        mkdir -p "$HOME/$CONF"
+        printf '[General]\nTOONZROOT=/nonexistent/elsewhere\n' > "$HOME/$CONF/SystemVar.ini"
+        timeout 120 /opt/opentoonz/bin/tconverter || true
+        test ! -e "$HOME/$CONF/stuff"
+        grep -q '^TOONZROOT=/nonexistent/elsewhere$' "$HOME/$CONF/SystemVar.ini"
+
+        # an ini without a root gets one, and keeps its other keys (#7001)
+        export HOME="$(mktemp -d)"
+        mkdir -p "$HOME/$CONF"
+        printf '[General]\nTOONZPROFILES=/keep/me\n' > "$HOME/$CONF/SystemVar.ini"
+        timeout 120 /opt/opentoonz/bin/tconverter || true
+        grep -q "^TOONZROOT=$HOME/$CONF/stuff$" "$HOME/$CONF/SystemVar.ini"
+        grep -q '^TOONZPROFILES=/keep/me$' "$HOME/$CONF/SystemVar.ini"
+
     - uses: actions/upload-artifact@v6
       with:
         name: Opentoonz-${{ runner.os }}-${{ matrix.compiler }}-${{ github.sha }}
@@ -129,6 +182,7 @@ jobs:
   # GCC/Qt) that the Ubuntu job cannot. Deliberately builds no AppImage.
   Fedora:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     container:
       image: fedora:latest
     steps:
@@ -136,7 +190,9 @@ jobs:
       # actions/checkout needs git and tar, absent from the base image
       run: dnf install -y git tar gzip
 
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      with:
+        persist-credentials: false
 
     - name: Install libraries
       run: |
@@ -161,5 +217,9 @@ jobs:
         cd toonz
         mkdir build
         cd build
-        cmake ../sources -G Ninja -DWITH_TRANSLATION=OFF
+        # -Werror=return-type mirrors the distro %optflags that RPM packagers
+        # build with. A missing return is only a warning in our default build,
+        # so it survives review and breaks packaging instead (see #6940).
+        cmake ../sources -G Ninja -DWITH_TRANSLATION=OFF \
+          -DCMAKE_CXX_FLAGS=-Werror=return-type
         ninja
