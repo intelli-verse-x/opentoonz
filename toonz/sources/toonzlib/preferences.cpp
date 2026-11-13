@@ -387,6 +387,8 @@ void Preferences::definePreferenceItems() {
          false);
   define(watchFileSystemEnabled, "watchFileSystemEnabled", QMetaType::Bool,
          true);
+  define(fileBrowserFolderDoubleClick, "fileBrowserFolderDoubleClick",
+         QMetaType::Bool, false);
   define(projectRoot, "projectRoot", QMetaType::Int, 0x08);
   define(customProjectRoot, "customProjectRoot", QMetaType::QString, "");
   define(pathAliasPriority, "pathAliasPriority", QMetaType::Int,
@@ -420,6 +422,7 @@ void Preferences::definePreferenceItems() {
          QMetaType::Bool, true);
   define(actualPixelViewOnSceneEditingMode, "actualPixelViewOnSceneEditingMode",
          QMetaType::Bool, false);
+  define(syncSceneAndLevelView, "syncSceneAndLevelView", QMetaType::Bool, true);
   define(showRasterImagesDarkenBlendedInViewer,
          "showRasterImagesDarkenBlendedInViewer", QMetaType::Bool, false);
   define(iconSize, "iconSize", QMetaType::QSize, QSize(80, 45), QSize(10, 10),
@@ -455,6 +458,7 @@ void Preferences::definePreferenceItems() {
 #endif
   define(showIconsInMenu, "showIconsInMenu", QMetaType::Bool, defIconsVisible);
   define(showRoomBindButtons, "showRoomBindButtons", QMetaType::Bool, true);
+  define(customHelpLink, "customHelpLink", QMetaType::QString, "");
 
   setCallBack(pixelsOnly, &Preferences::setPixelsOnly);
   setCallBack(linearUnits, &Preferences::setUnits);
@@ -462,6 +466,11 @@ void Preferences::definePreferenceItems() {
 
   define(viewerIndicatorEnabled, "viewerIndicatorEnabled", QMetaType::Bool,
          true);
+  define(restoreViewerViewFromLastSession, "restoreViewerViewFromLastSession",
+         QMetaType::Bool, false);
+  define(togglePanelWithShortcut, "togglePanelWithShortcut", QMetaType::Bool,
+         false);
+  define(RestoreStyleEditorTab, "RestoreStyleEditorTab", QMetaType::Bool, true);
 
   // Visualization
   define(show0ThickLines, "show0ThickLines", QMetaType::Bool, true);
@@ -553,6 +562,7 @@ void Preferences::definePreferenceItems() {
          QMetaType::Bool, false);
 
   // Tools
+  define(compressInputEvents, "compressInputEvents", QMetaType::Bool, true);
   define(FillOnlysavebox, "FillOnlysavebox", QMetaType::Bool, false);
   define(DefRegionWithPaint, "FillDefRegionWithPaint", QMetaType::Bool, true);
   define(ReferFillPrevailing, "ReferFillPrevailing", QMetaType::Bool, false);
@@ -571,9 +581,15 @@ void Preferences::definePreferenceItems() {
   define(tempToolSwitchTimer, "tempToolSwitchTimer", QMetaType::Int, 500, 1,
          std::numeric_limits<int>::max());
   define(animateToolHandleSize, "animateToolHandleSize", QMetaType::Double, 1.0,
-         1.0, 5.0);
+         0.01, 6.0);
   define(animateToolColor, "animateToolColor", QMetaType::QColor,
          QColor(250, 127, 240));
+  // The Preferences dialog updates both keys together. Advanced users may set
+  // these command IDs independently in preferences.ini.
+  define(defaultStartupTool, "defaultStartupTool", QMetaType::QString,
+         "T_Hand");
+  define(defaultNewSceneTool, "defaultNewSceneTool", QMetaType::QString,
+         "T_Hand");
 
   // Xsheet
   define(xsheetLayoutPreference, "xsheetLayoutPreference", QMetaType::QString,
@@ -618,6 +634,14 @@ void Preferences::definePreferenceItems() {
          true);
   define(currentColumnColor, "currentColumnColor", QMetaType::QColor,
          QColor(Qt::yellow));
+  define(customCurrentCellColorEnabled, "customCurrentCellColorEnabled",
+         QMetaType::Bool, false);
+  define(currentCellColor, "currentCellColor", QMetaType::QColor,
+         QColor(Qt::cyan));
+  define(customCurrentColumnOutlineColorEnabled,
+         "customCurrentColumnOutlineColorEnabled", QMetaType::Bool, false);
+  define(currentColumnOutlineColor, "currentColumnOutlineColor",
+         QMetaType::QColor, QColor(105, 168, 223));
   define(levelNameDisplayType, "levelNameDisplayType", QMetaType::Int,
          0);  // default
   define(showFrameNumberWithLetters, "showFrameNumberWithLetters",
@@ -667,6 +691,7 @@ void Preferences::definePreferenceItems() {
   // Colors
   define(viewerBGColor, "viewerBGColor", QMetaType::QColor,
          QColor(128, 128, 128));
+  define(tableColor, "tableColor", QMetaType::QColor, QColor(153, 166, 179));
   define(previewBGColor, "previewBGColor", QMetaType::QColor,
          QColor(64, 64, 64));
   define(levelEditorBoxColor, "levelEditorBoxColor", QMetaType::QColor,
@@ -699,6 +724,8 @@ void Preferences::definePreferenceItems() {
   define(useQtNativeWinInk, "useQtNativeWinInk", QMetaType::Bool, false);
 
   // Others (not appearing in the popup)
+  // Tape Tool: 0 = ask, 1 = continue, 2 = cancel.
+  define(tapeToolFillRiskPolicy, "tapeToolFillRiskPolicy", QMetaType::Int, 0);
   // Shortcut popup settings
   define(shortcutPreset, "shortcutPreset", QMetaType::QString, "defopentoonz");
   // Viewer context menu
