@@ -947,6 +947,7 @@ void DockLayout::setActiveTab(Region *region, int index) {
 //------------------------------------------------------
 
 void DockLayout::reorderTab(Region *region, int fromIndex, int toIndex) {
+  if (DockingCheck::instance()->isEnabled() || getMaximized()) return;
   if (!region || !region->hasTabGroup()) return;
 
   region->moveTab(fromIndex, toIndex);
@@ -1105,6 +1106,7 @@ bool DockLayout::undockFromTabGroup(DockWidget *item, Region *region,
 bool DockLayout::detachTabForDrag(DockWidget *item, Region *region,
                                   const QPoint &globalPos,
                                   const QPoint &grabOffsetInTab) {
+  if (DockingCheck::instance()->isEnabled() || getMaximized()) return false;
   if (!item || !region || !parentWidget()) return false;
   if (!region->hasTabGroup()) return false;
 
@@ -1178,6 +1180,7 @@ void DockLayout::addPanelToTabGroup(DockWidget *item, Region *region) {
 //------------------------------------------------------
 
 bool DockLayout::canMergeAsTabs(DockWidget *item, DockWidget *target) const {
+  if (DockingCheck::instance()->isEnabled() || m_maximizedDock) return false;
   if (!item || !target || item == target) return false;
   return supportsTabGrouping(item) && supportsTabGrouping(target);
 }

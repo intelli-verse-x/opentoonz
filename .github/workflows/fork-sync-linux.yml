@@ -57,6 +57,7 @@ jobs:
       run: |
         python3 .github/tests/test_gif_export_policy.py
         python3 .github/tests/test_dock_tab_geometry.py
+        python3 .github/tests/test_dock_tab_lock.py
 
     - name: Set up cache
       run: mkdir -p /home/runner/.ccache

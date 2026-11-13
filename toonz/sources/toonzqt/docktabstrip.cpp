@@ -183,6 +183,9 @@ bool DockTabStrip::isOutsideTabStrip(const QPoint &globalPos) const {
 //-------------------------------------
 
 void DockTabStrip::tryBeginDragOut(const QPoint &globalPos) {
+  if (DockingCheck::instance()->isEnabled() ||
+      (m_layout && m_layout->getMaximized()))
+    return;
   if (m_dragOutStarted || !m_layout || !m_region || m_pressIndex < 0 ||
       m_pressIndex >= (int)m_region->tabItems().size())
     return;
@@ -274,6 +277,15 @@ void DockTabStrip::mousePressEvent(QMouseEvent *event) {
 //-------------------------------------
 
 void DockTabStrip::mouseMoveEvent(QMouseEvent *event) {
+  // Locking preserves tab selection, but forbids layout mutations. Recheck
+  // during the drag because the lock may change after the press.
+  if (DockingCheck::instance()->isEnabled() ||
+      (m_layout && m_layout->getMaximized())) {
+    m_reordering = false;
+    clearInsertionMarker();
+    event->accept();
+    return;
+  }
   if (!(event->buttons() & Qt::LeftButton) || m_pressIndex < 0 ||
       m_dragOutStarted) {
     QTabBar::mouseMoveEvent(event);
